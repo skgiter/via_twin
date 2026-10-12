@@ -62,7 +62,11 @@ export default function App() {
   });
 
   // Presentation shell: Android Phone Frame vs Fullscreen
-  const [isPhoneFrame, setIsPhoneFrame] = useState(true);
+  const isNativeApp = typeof window !== 'undefined' && (
+    window.location.protocol === 'file:' ||
+    Boolean((window as any).viaAndroidBridge)
+  );
+  const [isPhoneFrame, setIsPhoneFrame] = useState(!isNativeApp);
   const [isDesktopOpen, setIsDesktopOpen] = useState(false);
 
   // Modals state
@@ -147,6 +151,13 @@ export default function App() {
       setMode('regular');
       loadModeData('regular');
 
+      // 4. Notify Android Native Bridge
+      if (typeof window !== 'undefined' && (window as any).viaAndroidBridge?.exitIsolatedSpace) {
+        try {
+          (window as any).viaAndroidBridge.exitIsolatedSpace();
+        } catch {}
+      }
+
       if (reason) {
         showToast(reason);
       }
@@ -163,9 +174,26 @@ export default function App() {
     setMode('isolated');
     loadModeData('isolated');
 
+    // 3. Notify Android Native Bridge to activate FLAG_SECURE
+    if (typeof window !== 'undefined' && (window as any).viaAndroidBridge?.enterIsolatedSpace) {
+      try {
+        (window as any).viaAndroidBridge.enterIsolatedSpace();
+      } catch {}
+    }
+
     setShowPinLockModal(false);
     showToast('已进入平行隔离空间 (数据完全独立)');
   }, [flushCurrentState, loadModeData, showToast]);
+
+  // Expose global exit function for Android Native lifecycle callers
+  useEffect(() => {
+    (window as any).viaNativeExit = () => {
+      exitToRegularAccount('系统事件：已即刻无缝退回主账户');
+    };
+    return () => {
+      delete (window as any).viaNativeExit;
+    };
+  }, [exitToRegularAccount]);
 
   // Secret trigger from Settings: User clicked "About" 3 times!
   const handleTriggerIsolatedFromSettings = () => {
@@ -468,87 +496,89 @@ export default function App() {
 
   return (
     <div className="w-screen h-screen bg-neutral-950 flex flex-col items-center justify-center overflow-hidden font-sans select-none text-neutral-100">
-      {/* Top Desktop Helper Bar (Only visible on wide screens) */}
-      <div className="w-full max-w-4xl px-4 py-2 hidden md:flex items-center justify-between text-xs text-neutral-400 select-none">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-neutral-200">Via 安卓浏览器</span>
-          <span className="text-neutral-600">|</span>
-          <span>
-            当前状态：
-            {isIsolated ? (
-              <span className="text-amber-400 font-medium">平行隔离空间模式</span>
-            ) : (
-              <span className="text-emerald-400 font-medium">普通主账户模式</span>
-            )}
-          </span>
-        </div>
+      {/* Top Desktop Helper Bar (Only visible on wide screens and non-native) */}
+      {!isNativeApp && (
+        <div className="w-full max-w-4xl px-4 py-2 hidden md:flex items-center justify-between text-xs text-neutral-400 select-none">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-neutral-200">Via 安卓浏览器</span>
+            <span className="text-neutral-600">|</span>
+            <span>
+              当前状态：
+              {isIsolated ? (
+                <span className="text-amber-400 font-medium">平行隔离空间模式</span>
+              ) : (
+                <span className="text-emerald-400 font-medium">普通主账户模式</span>
+              )}
+            </span>
+          </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsPhoneFrame(!isPhoneFrame)}
-            className="flex items-center gap-1 hover:text-neutral-200 text-neutral-400 transition-colors"
-          >
-            {isPhoneFrame ? <Monitor className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
-            <span>{isPhoneFrame ? '全屏沉浸' : '手机视图'}</span>
-          </button>
-
-          {isIsolated && (
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => exitToRegularAccount('已手动安全返回普通模式')}
-              className="flex items-center gap-1 text-amber-400 hover:text-amber-300 font-medium transition-colors"
+              onClick={() => setIsPhoneFrame(!isPhoneFrame)}
+              className="flex items-center gap-1 hover:text-neutral-200 text-neutral-400 transition-colors"
             >
-              <EyeOff className="w-3.5 h-3.5" />
-              <span>防窥锁退</span>
+              {isPhoneFrame ? <Monitor className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
+              <span>{isPhoneFrame ? '全屏沉浸' : '手机视图'}</span>
             </button>
-          )}
 
-          <button
-            onClick={() => setShowNativeCodeModal(true)}
-            className="flex items-center gap-1 hover:text-emerald-400 text-neutral-400 transition-colors"
-            title="查看纯原生 Android 0帧防窥 Kotlin 架构源码"
-          >
-            <Cpu className="w-3.5 h-3.5 text-emerald-400" />
-            <span>原生 Android 源码</span>
-          </button>
+            {isIsolated && (
+              <button
+                onClick={() => exitToRegularAccount('已手动安全返回普通模式')}
+                className="flex items-center gap-1 text-amber-400 hover:text-amber-300 font-medium transition-colors"
+              >
+                <EyeOff className="w-3.5 h-3.5" />
+                <span>防窥锁退</span>
+              </button>
+            )}
 
-          <button
-            onClick={() => setShowGitHubModal(true)}
-            className="flex items-center gap-1 hover:text-white text-neutral-300 font-medium transition-colors"
-            title="查看 GitHub 自动打包 Android APK 流程"
-          >
-            <Github className="w-3.5 h-3.5 text-neutral-200" />
-            <span>GitHub 打包 APK</span>
-          </button>
+            <button
+              onClick={() => setShowNativeCodeModal(true)}
+              className="flex items-center gap-1 hover:text-emerald-400 text-neutral-400 transition-colors"
+              title="查看纯原生 Android 0帧防窥 Kotlin 架构源码"
+            >
+              <Cpu className="w-3.5 h-3.5 text-emerald-400" />
+              <span>原生 Android 源码</span>
+            </button>
 
-          <button
-            onClick={handleGoToDesktop}
-            className="flex items-center gap-1 hover:text-neutral-200 text-neutral-400 transition-colors"
-            title="模拟返回手机桌面 (将自动退出隔离模式)"
-          >
-            <HomeIcon className="w-3.5 h-3.5" />
-            <span>返回手机桌面</span>
-          </button>
+            <button
+              onClick={() => setShowGitHubModal(true)}
+              className="flex items-center gap-1 hover:text-white text-neutral-300 font-medium transition-colors"
+              title="查看 GitHub 自动打包 Android APK 流程"
+            >
+              <Github className="w-3.5 h-3.5 text-neutral-200" />
+              <span>GitHub 打包 APK</span>
+            </button>
 
-          <button
-            onClick={handleSimulatePowerLock}
-            className="px-2 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 transition-colors"
-            title="测试息屏无缝退出逻辑"
-          >
-            模拟关屏/锁屏
-          </button>
+            <button
+              onClick={handleGoToDesktop}
+              className="flex items-center gap-1 hover:text-neutral-200 text-neutral-400 transition-colors"
+              title="模拟返回手机桌面 (将自动退出隔离模式)"
+            >
+              <HomeIcon className="w-3.5 h-3.5" />
+              <span>返回手机桌面</span>
+            </button>
+
+            <button
+              onClick={handleSimulatePowerLock}
+              className="px-2 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 transition-colors"
+              title="测试息屏无缝退出逻辑"
+            >
+              模拟关屏/锁屏
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Container: Mobile Shell or Fullscreen */}
       <main
         className={`relative flex flex-col bg-neutral-900 overflow-hidden shadow-2xl transition-all duration-300 ${
-          isPhoneFrame
+          isPhoneFrame && !isNativeApp
             ? 'w-full max-w-[412px] h-full max-h-[860px] md:rounded-[40px] md:border-4 md:border-neutral-800'
             : 'w-full h-full'
         }`}
       >
         {/* Android Physical Simulated Power Button for easy testing */}
-        {isPhoneFrame && (
+        {isPhoneFrame && !isNativeApp && (
           <button
             onClick={handleSimulatePowerLock}
             className="hidden md:block absolute -right-3 top-24 w-1.5 h-12 bg-neutral-700 hover:bg-neutral-500 rounded-r-md cursor-pointer transition-colors z-40"
@@ -556,12 +586,14 @@ export default function App() {
           />
         )}
 
-        {/* Android Status Bar */}
-        <AndroidStatusBar
-          mode={mode}
-          showSecretIndicator={settings.showSecretIndicator}
-          onSimulatePowerLock={handleSimulatePowerLock}
-        />
+        {/* Android Status Bar (Only in desktop simulator) */}
+        {!isNativeApp && (
+          <AndroidStatusBar
+            mode={mode}
+            showSecretIndicator={settings.showSecretIndicator}
+            onSimulatePowerLock={handleSimulatePowerLock}
+          />
+        )}
 
         {/* Top Browser Bar (URL & Omnibox) */}
         <TopBar
@@ -609,24 +641,30 @@ export default function App() {
           onOpenMenu={() => setShowMenuSheet(true)}
         />
 
-        {/* Android Gesture Pill & 3-Button Nav */}
-        <AndroidNavBar
-          onGoToDesktop={handleGoToDesktop}
-          onSystemBack={handleGoBack}
-        />
+        {/* Android Gesture Pill & 3-Button Nav (Only in desktop simulator) */}
+        {!isNativeApp && (
+          <AndroidNavBar
+            onGoToDesktop={handleGoToDesktop}
+            onSystemBack={handleGoBack}
+          />
+        )}
 
-        {/* Simulated Android Desktop Launcher Overlay */}
-        <AndroidDesktopOverlay
-          isOpen={isDesktopOpen}
-          onOpenViaBrowser={handleOpenFromDesktop}
-          onSimulatePowerLock={handleSimulatePowerLock}
-        />
+        {/* Simulated Android Desktop Launcher Overlay (Only in desktop simulator) */}
+        {!isNativeApp && (
+          <AndroidDesktopOverlay
+            isOpen={isDesktopOpen}
+            onOpenViaBrowser={handleOpenFromDesktop}
+            onSimulatePowerLock={handleSimulatePowerLock}
+          />
+        )}
 
-        {/* Simulated Screen Lock / Phone Standby Overlay */}
-        <ScreenLockOverlay
-          isOpen={isScreenLocked}
-          onWakeUp={handleWakeUpScreen}
-        />
+        {/* Simulated Screen Lock / Phone Standby Overlay (Only in desktop simulator) */}
+        {!isNativeApp && (
+          <ScreenLockOverlay
+            isOpen={isScreenLocked}
+            onWakeUp={handleWakeUpScreen}
+          />
+        )}
 
         {/* Toast Toast Notification */}
         {toastMessage && (
