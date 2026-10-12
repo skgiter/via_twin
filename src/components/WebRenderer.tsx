@@ -20,6 +20,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { AccountMode, TabItem } from '../types/browser';
+import { BilibiliRenderer } from './BilibiliRenderer';
 
 interface Props {
   activeTab: TabItem;
@@ -296,58 +297,14 @@ export const WebRenderer: React.FC<Props> = ({
     );
   }
 
-  // Check if simulated Wikipedia article or news
-  if (url.includes('wikipedia.org') || url.includes('github.com') || url.includes('v2ex.com') || url.includes('bilibili.com')) {
-    const isWiki = url.includes('wikipedia.org');
-    const isGithub = url.includes('github.com');
-
+  // Check if it's Bilibili
+  if (url.includes('bilibili.com')) {
     return (
-      <div className="flex-1 w-full bg-neutral-900 text-neutral-100 overflow-y-auto p-4 select-text">
-        <div className="max-w-md mx-auto space-y-4">
-          <div className="flex items-center justify-between border-b border-neutral-800 pb-2">
-            <span className="text-xs font-medium text-neutral-400">
-              {isWiki ? '维基百科精简视图' : isGithub ? 'GitHub 移动视图' : '极简阅读器'}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onViewSource(url)}
-                className="text-[11px] text-neutral-400 hover:text-neutral-200 flex items-center gap-1"
-              >
-                <Code className="w-3 h-3" />
-                <span>查看源码</span>
-              </button>
-            </div>
-          </div>
-
-          <article className="space-y-3">
-            <h1 className="text-base font-bold text-neutral-100">
-              {activeTab.title || '网页内容'}
-            </h1>
-            <div className="text-[11px] text-neutral-400">
-              来源: {url} · 阅读时间 2 分钟
-            </div>
-            <div className="text-xs text-neutral-300 leading-relaxed space-y-2.5">
-              <p>
-                Via 浏览器之所以能够保持在 1MB 以内的极致轻巧，核心在于深度调用操作系统原生自带的 WebView 引擎，省去了打包 Chromium 内核的庞大体积，并摒弃了广告联盟、信息流推送与后台驻留。
-              </p>
-              <p>
-                本应用的平行隔离账号系统进一步创新：通过在应用层构建完全隔离的独立存储分区，使用户只需在关于页面轻触三次，即可一键滑入秘密平行空间。
-              </p>
-              <div className="p-3 bg-neutral-850 border border-neutral-800 rounded-xl my-2">
-                <div className="text-[11px] font-semibold text-neutral-200 mb-1">
-                  安全隔离核心要点：
-                </div>
-                <ul className="list-disc list-inside text-[11px] text-neutral-400 space-y-1">
-                  <li>书签与收藏：各自独立，无交叉引用</li>
-                  <li>浏览历史：物理隔离，主账号无法检索隔离记录</li>
-                  <li>Cookies与缓存：独立分库，防止第三方追踪</li>
-                  <li>息屏与切后台：秒级无缝自动归位到主账户</li>
-                </ul>
-              </div>
-            </div>
-          </article>
-        </div>
-      </div>
+      <BilibiliRenderer
+        url={url}
+        onNavigate={onNavigate}
+        onViewSource={onViewSource}
+      />
     );
   }
 

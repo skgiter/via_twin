@@ -33,7 +33,7 @@ const DEFAULT_SETTINGS: BrowserSettings = {
 
 const DEFAULT_REGULAR_QUICK_DIALS: QuickDial[] = [
   { id: 'qd-1', title: '百度', url: 'https://www.baidu.com', iconBg: '#2932E1', iconText: '度' },
-  { id: 'qd-2', title: '哔哩哔哩', url: 'https://www.bilibili.com', iconBg: '#FB7299', iconText: 'B' },
+  { id: 'qd-2', title: '哔哩哔哩', url: 'https://m.bilibili.com', iconBg: '#FB7299', iconText: 'B' },
   { id: 'qd-3', title: '维基百科', url: 'https://zh.wikipedia.org', iconBg: '#4B5563', iconText: 'W' },
   { id: 'qd-4', title: 'GitHub', url: 'https://github.com', iconBg: '#24292E', iconText: 'Git' },
   { id: 'qd-5', title: '知乎', url: 'https://www.zhihu.com', iconBg: '#0066FF', iconText: '知' },
