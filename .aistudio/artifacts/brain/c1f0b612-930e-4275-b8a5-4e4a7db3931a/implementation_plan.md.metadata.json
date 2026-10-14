@@ -1,0 +1,6 @@
+{
+  "summary": "Comprehensive implementation plan to transform the app into a true, production-grade mobile web browser. Covers:\n1. Native & responsive mobile web rendering (removing artificial themes like custom Bilibili cards, loading pure original mobile websites with real User-Agent and desktop/mobile toggle).\n2. Dynamic auto-hiding top omnibox and bottom navigation bars on scroll-down with instant slide-in on scroll-up.\n3. Full real multi-tab manager with live previews, new tab creation, and closing.\n4. Omnibox real-time search suggestions with multi-engine switching (Baidu, Bing, Google, DuckDuckGo).\n5. Comprehensive bookmarks and history management with real folder hierarchy, edit/delete, JSON/HTML import and export.\n6. Elimination of all prototype mock/dummy artifacts in favor of real, working browser features.",
+  "updatedAt": "2026-10-14T23:28:34.865638814Z",
+  "requestFeedback": true,
+  "userFacing": true
+}
