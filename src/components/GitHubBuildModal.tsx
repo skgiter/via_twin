@@ -64,6 +64,42 @@ git push -u origin main`;
           </button>
         </div>
 
+        {/* Direct Download Banner for Latest Release */}
+        <div className="bg-gradient-to-r from-blue-900/40 to-emerald-900/40 border border-blue-500/40 rounded-2xl p-4 flex flex-col gap-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Download className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs font-semibold text-neutral-100">最新 Android 原生安装包 (v1.0.4)</span>
+            </div>
+            <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono">
+              6.35 MB
+            </span>
+          </div>
+          <p className="text-[11px] text-neutral-300 leading-relaxed">
+            已在云端全自动编译构建完成！具备真实移动端原网页渲染、上下栏滑动自隐藏、双列多标签卡片管理与 0 帧防窥锁退。
+          </p>
+          <div className="flex items-center gap-2 pt-1">
+            <a
+              href="https://github.com/skgiter/via_twin/releases/download/v1.0.4/ViaBrowser_Parallel_v1.0.4.apk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 py-2 px-3 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-md"
+            >
+              <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>直接下载 APK (v1.0.4)</span>
+            </a>
+            <a
+              href="https://github.com/skgiter/via_twin/releases/tag/v1.0.4"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-2 px-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs rounded-xl flex items-center justify-center gap-1 transition-colors border border-neutral-700"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>发行页</span>
+            </a>
+          </div>
+        </div>
+
         {/* Workflow Info Banner */}
         <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-3.5 space-y-2">
           <div className="flex items-center gap-2 text-xs font-semibold text-neutral-200">
