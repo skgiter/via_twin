@@ -1,0 +1,6 @@
+{
+  "name": "Via Browser - 极简极速与平行隔离浏览器",
+  "description": "超轻量极简安卓端风格浏览器，支持独立平行的隔离空间、专属书签/历史/Cookies与自动息屏切后台防窥加密保护。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
